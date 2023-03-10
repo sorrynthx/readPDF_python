@@ -1,0 +1,5 @@
+pip install eel
+
+pip install PyPDF2
+
+pip install xlsxwriter

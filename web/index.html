@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload Example</title>
+</head>
+<body>
+    <h1>File Upload Example</h1>
+    <input type="file" id="file-upload">
+    <button onclick="uploadFile()">Upload File</button>
+    <br>
+    <input type="text" id="file-name" value="파일 이름">
+    <button onclick="download()">Download File</button>
+
+    <br>
+    <br>
+
+    <div id="resultDiv"></div>
+    <textarea id="text-area"></textarea>
+
+
+    <!-- Include the EEL JavaScript library -->
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/xlsx-style/dist/xlsx.full.min.js"></script>
+
+    <script type="text/javascript">
+        function uploadFile() {
+            // Get the selected file from the file input element
+            var fileInput = document.getElementById('file-upload');
+            var file = fileInput.files[0];
+
+            // Check if a file was selected
+            if (file) {
+                // Read the file data as an ArrayBuffer
+                var reader = new FileReader();
+                reader.onload = function() {
+                    // Call the Python function to upload the file and read the text
+                    eel.upload_file(file.name, file.size, file.type, Array.from(new Uint8Array(reader.result)))(function(response) {
+                                                
+                        // Split the response into an array of lines
+                        var lines = response.split('\n');
+                        
+                        // Clear the text area
+                        document.getElementById('resultDiv').innerHTML = '';
+                        document.getElementById('text-area').innerHTML = '';
+
+                        // Append each line to the text area
+                        lines.forEach(function(line) {
+                            document.getElementById('resultDiv').innerHTML += line.replace(/ /g,'') + '<br>';
+                            document.getElementById('text-area').innerHTML += line.replace(/ /g,'') + '\n';
+                        });
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                // Display an error message if no file was selected
+                alert('Please select a file to upload');
+            }
+        }
+        
+
+         
+        function download() {
+            // Get the text from the text area
+            var text = document.getElementById('text-area').value;
+            var fname = document.getElementById('file-name').value;
+            console.log('===>' + text);
+            
+            // Check if the text is empty
+            if (text.trim() === '') {
+                // Display an error message if the text is empty
+                alert('Please upload a PDF file and extract the text first');
+                return;
+            }
+
+            eel.create_excel_file(text, fname);
+        }
+
+
+    </script>
+</body>
+</html>
+
+
